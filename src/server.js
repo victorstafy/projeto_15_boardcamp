@@ -57,17 +57,17 @@ server.post('/categories', async (req, res) => {
         if (validation.error) {
             return res.status(400).send(validation.error.details);
         }
-        const previos_name=await connection.query("SELECT * FROM categories WHERE name=$1",[name]);
+        const previos_name=await connection.query("SELECT * FROM categories WHERE name=$1",[name.name]);
 
         if (previos_name) {
             return res.sendStatus(409);
         }
 
-        const InsertName=await connection.query("INSERT INTO categories (name) VALUES ($1)",[name]);
+        const InsertName=await connection.query("INSERT INTO categories (name) VALUES ($1)",[name.name]);
 
         res.sendStatus(201);
     } catch (err) {
-        console.error(err);
+        console.error(name.name);
         res.sendStatus(500);
     }
 });
