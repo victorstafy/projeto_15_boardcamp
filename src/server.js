@@ -1,11 +1,10 @@
-import dotenv from 'dotenv';
-import express from 'express';
+import dotenv from "dotenv";
+import express from "express";
 
-import cors from 'cors';
-import connection from './database/database.js';
-
-import polls from './routes/poll.Routes.js';
-import choices from './routes/choice.Routes.js';
+import cors from "cors";
+import connection from "./database/database.js";
+import dayjs from "dayjs";
+import joi from "joi";
 
 dotenv.config();
 
@@ -14,6 +13,15 @@ const server = express();
 // express 
 server.use(express.json());
 server.use(cors());
+
+server.get('/status', (req,res)=>{
+    try{
+        res.send('ok')
+    }
+    catch(error){
+        console.log(error)
+    }
+})
 
 const categorieSchema = joi
 .object({
@@ -34,11 +42,11 @@ const customerPostSchema = joi
     name: joi.string().empty("").required(),
     phone: joi.string().max(11).min(10).pattern(/^[0-9]+$/).required(),
     cpf: joi.string().length(11).pattern(/^[0-9]+$/).required(),
-    birthday: joi.isoDate().required(),
+    birthday: joi.date().required(),
 });
 
 //routes-
-app.post('/categories', async (req, res) => {
+server.post('/categories', async (req, res) => {
     const name = req.body;
     
     const validation = categorieSchema.validate(req.body, {
@@ -64,7 +72,7 @@ app.post('/categories', async (req, res) => {
     }
 });
 
-app.get('/categories', async (req, res) => {
+server.get('/categories', async (req, res) => {
     try {
         const categories_list = await connection.query('SELECT * FROM categories;');
 
@@ -77,7 +85,7 @@ app.get('/categories', async (req, res) => {
 
 
 
-app.post('/games', async (req, res) => {
+server.post('/games', async (req, res) => {
     const game_obj = req.body;
     
     const validation = gameSchema.validate(req.body, {
@@ -108,7 +116,7 @@ app.post('/games', async (req, res) => {
     }
 });
 
-app.get('/games', async (req, res) => {
+server.get('/games', async (req, res) => {
 	const name = req.query.name;
 
     try {
@@ -128,7 +136,7 @@ app.get('/games', async (req, res) => {
 
 
 
-app.post('/customers', async (req, res) => {
+server.post('/customers', async (req, res) => {
     const customer_obj = req.body;
     
     const validation = customerPostSchema.validate(req.body, {
@@ -155,7 +163,7 @@ app.post('/customers', async (req, res) => {
     }
 });
 
-app.put('/customers/:id', async (req, res) => {
+server.put('/customers/:id', async (req, res) => {
     const customer_obj = req.body;
     const id= req.params;
     
@@ -187,7 +195,7 @@ app.put('/customers/:id', async (req, res) => {
     }
 });
 
-app.get('/customers', async (req, res) => {
+server.get('/customers', async (req, res) => {
 	const cpf_init = req.query.cpf;
 
     try {
@@ -205,7 +213,7 @@ app.get('/customers', async (req, res) => {
     }
 });
 
-app.get('/customers/:id', async (req, res) => {
+server.get('/customers/:id', async (req, res) => {
 	const id= req.params;
     
     try {
@@ -227,7 +235,7 @@ app.get('/customers/:id', async (req, res) => {
 
 
 
-app.post('/rentals', async (req, res) => {
+server.post('/rentals', async (req, res) => {
     const rent_obj = req.body;
 
     try {
@@ -255,7 +263,7 @@ app.post('/rentals', async (req, res) => {
     }
 });
 
-app.post('/rentals:id/return', async (req, res) => {
+server.post('/rentals:id/return', async (req, res) => {
 	const id = req.params;
 
     try {
@@ -291,7 +299,7 @@ app.post('/rentals:id/return', async (req, res) => {
     }
 });
 
-app.get('/rentals', async (req, res) => {
+server.get('/rentals', async (req, res) => {
     const {customerId} = req.query.customerId;
     const {gameId} = req.query.gameId;
     
@@ -378,7 +386,7 @@ app.get('/rentals', async (req, res) => {
     }
 })
 
-app.delete('/rentals/:id', async (req, res)=>{
+server.delete('/rentals/:id', async (req, res)=>{
     const id = req.params;
 
     try{
